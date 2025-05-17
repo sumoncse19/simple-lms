@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ArrowRight } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import {
   getCourse,
   getEnrollment,
@@ -22,10 +24,12 @@ import { cn } from "@/lib/utils";
 const CourseDetails = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [course, setCourse] = useState<Course | null>(null);
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [highlightedPrereqs, setHighlightedPrereqs] = useState<string[]>([]);
 
   useEffect(() => {
     const loadCourseData = () => {
@@ -70,17 +74,31 @@ const CourseDetails = () => {
 
       // Check prerequisites
       const allEnrollments = getEnrollments();
-      const hasPrerequisites = course?.prerequisites?.every(
-        (prereqId: string) => {
-          const prereqEnrollment = allEnrollments.find(
-            (e) => e.courseId === prereqId
-          );
-          return prereqEnrollment?.status === "completed";
-        }
-      );
+      const incompletePrereqs = course?.prerequisites?.filter((prereqId) => {
+        const prereqEnrollment = allEnrollments.find(
+          (e) => e.courseId === prereqId
+        );
+        return prereqEnrollment?.status !== "completed";
+      });
 
-      if (course?.prerequisites?.length && !hasPrerequisites) {
-        throw new Error("You must complete all prerequisite courses first");
+      if (course?.prerequisites?.length && incompletePrereqs?.length) {
+        // Highlight incomplete prerequisites
+        setHighlightedPrereqs(incompletePrereqs);
+
+        // Show toast message
+        toast({
+          variant: "destructive",
+          title: "Prerequisites Required",
+          description: "You must complete all prerequisite courses first",
+          duration: 3000,
+        });
+
+        // Remove highlight after 3 seconds
+        setTimeout(() => {
+          setHighlightedPrereqs([]);
+        }, 3000);
+
+        return;
       }
 
       // Enroll in the course
@@ -91,9 +109,11 @@ const CourseDetails = () => {
       // Navigate to the course content
       navigate(`/learning/${courseId}`);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to enroll in course"
-      );
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: err instanceof Error ? err.message : "Failed to enroll in course",
+      });
       console.error("Error enrolling in course:", err);
     }
   };
@@ -163,8 +183,23 @@ const CourseDetails = () => {
                   {course.prerequisites.map((prereqId: string) => {
                     const prereqCourse = getCourse(prereqId);
                     return (
-                      <li key={prereqId}>
-                        {prereqCourse?.title || "Unknown Course"}
+                      <li key={prereqId} className="flex items-center gap-2">
+                        <ArrowRight className="h-4 w-4" />
+                        {prereqCourse ? (
+                          <Link
+                            to={`/courses/${prereqId}`}
+                            className={cn(
+                              "hover:underline",
+                              highlightedPrereqs.includes(prereqId)
+                                ? "text-destructive font-medium"
+                                : "text-primary"
+                            )}
+                          >
+                            {prereqCourse.title}
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground">Unknown Course</span>
+                        )}
                       </li>
                     );
                   })}

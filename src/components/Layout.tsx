@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/toaster";
 
 interface LayoutProps {
   children: ReactNode;
@@ -69,6 +70,7 @@ const Layout = ({ children }: LayoutProps) => {
         </div>
       </header>
       <main className="container mx-auto px-4 py-8">{children}</main>
+      <Toaster />
     </div>
   );
 };

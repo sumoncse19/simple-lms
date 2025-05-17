@@ -12,6 +12,7 @@ const SAMPLE_COURSES: Course[] = [
     isFree: true,
     level: "beginner",
     instructor: "John Doe",
+    prerequisites: [],
   },
   {
     id: "2",
@@ -22,6 +23,7 @@ const SAMPLE_COURSES: Course[] = [
     isFree: false,
     level: "advanced",
     instructor: "Jane Smith",
+    prerequisites: ["1"],
   },
   {
     id: "3",
@@ -32,6 +34,7 @@ const SAMPLE_COURSES: Course[] = [
     isFree: false,
     level: "intermediate",
     instructor: "Daniel Lee",
+    prerequisites: [],
   },
   {
     id: "4",
@@ -42,6 +45,7 @@ const SAMPLE_COURSES: Course[] = [
     isFree: false,
     level: "intermediate",
     instructor: "Sarah Wilson",
+    prerequisites: ["1"],
   },
   {
     id: "5",
@@ -52,6 +56,7 @@ const SAMPLE_COURSES: Course[] = [
     isFree: true,
     level: "beginner",
     instructor: "Alex Brown",
+    prerequisites: ["1"],
   },
   {
     id: "6",
@@ -63,6 +68,7 @@ const SAMPLE_COURSES: Course[] = [
     isFree: true,
     level: "beginner",
     instructor: "Emily Carter",
+    prerequisites: ["3"],
   },
   {
     id: "7",
@@ -73,6 +79,7 @@ const SAMPLE_COURSES: Course[] = [
     isFree: true,
     level: "intermediate",
     instructor: "Mike Johnson",
+    prerequisites: ["1", "4"],
   },
   {
     id: "8",
@@ -83,6 +90,7 @@ const SAMPLE_COURSES: Course[] = [
     isFree: true,
     level: "intermediate",
     instructor: "Laura Kim",
+    prerequisites: ["3", "6"],
   },
 ];
 
