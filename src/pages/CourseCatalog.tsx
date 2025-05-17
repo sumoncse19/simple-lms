@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,34 +18,49 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Search } from "lucide-react";
 import type { Course } from "@/types";
 import { getCourses, getTotalCourses } from "@/services/storage";
 
 const PAGE_SIZE = 5;
+const SEARCH_DEBOUNCE_MS = 300;
 
 const CourseCatalog = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [allCourses, setAllCourses] = useState<Course[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [priceFilter, setPriceFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("title");
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCourses, setTotalCourses] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    (query: string) => {
+      const timer = setTimeout(() => {
+        setIsSearching(false);
+      }, SEARCH_DEBOUNCE_MS);
+      return () => clearTimeout(timer);
+    },
+    []
+  );
 
   useEffect(() => {
     const loadCourses = () => {
       try {
         setIsLoading(true);
         setError(null);
-        const allCourses = getCourses(currentPage, PAGE_SIZE);
-        setCourses(allCourses);
-        setTotalCourses(getTotalCourses());
+        // Get all courses without pagination
+        const courses = getCourses();
+        setAllCourses(courses);
 
         // Extract unique categories
-        const uniqueCategories = Array.from(new Set(allCourses.map(course => course.category)));
+        const uniqueCategories = Array.from(
+          new Set(courses.map((course) => course.category))
+        );
         setCategories(uniqueCategories);
       } catch (err) {
         setError("Failed to load courses. Please try again later.");
@@ -56,14 +71,25 @@ const CourseCatalog = () => {
     };
 
     loadCourses();
-  }, [currentPage]);
+  }, []);
+
+  // Handle search input changes
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    setIsSearching(true);
+    setCurrentPage(1); // Reset to first page on new search
+    debouncedSearch(query);
+  };
 
   // Filter and sort courses
-  const filteredAndSortedCourses = courses
+  const filteredAndSortedCourses = allCourses
     .filter((course) => {
+      const searchLower = searchQuery.toLowerCase();
       const matchesSearch =
-        course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        course.description.toLowerCase().includes(searchQuery.toLowerCase());
+        course.title.toLowerCase().includes(searchLower) ||
+        course.description.toLowerCase().includes(searchLower) ||
+        course.category.toLowerCase().includes(searchLower);
       const matchesCategory =
         selectedCategory === "all" || course.category === selectedCategory;
       const matchesPrice =
@@ -82,7 +108,18 @@ const CourseCatalog = () => {
       return 0;
     });
 
-  const totalPages = Math.ceil(totalCourses / PAGE_SIZE);
+  // Apply pagination to filtered results
+  const paginatedCourses = filteredAndSortedCourses.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
+  const totalPages = Math.ceil(filteredAndSortedCourses.length / PAGE_SIZE);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, priceFilter, sortBy]);
 
   if (error) {
     return (
@@ -107,17 +144,29 @@ const CourseCatalog = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Course Catalog</h1>
+        <p className="text-sm text-muted-foreground">
+          Showing {filteredAndSortedCourses.length} courses
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <div className="md:col-span-2">
-          <Input
-            type="search"
-            placeholder="Search courses..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            aria-label="Search courses"
-          />
+        <div className="md:col-span-2 relative">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search courses by title, description, or category..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="pl-9"
+              aria-label="Search courses"
+            />
+          </div>
+          {isSearching && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+            </div>
+          )}
         </div>
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
           <SelectTrigger>
@@ -157,7 +206,7 @@ const CourseCatalog = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredAndSortedCourses.map((course) => (
+        {paginatedCourses.map((course) => (
           <Card key={course.id} className="flex flex-col">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -196,8 +245,19 @@ const CourseCatalog = () => {
       {filteredAndSortedCourses.length === 0 && (
         <div className="text-center py-8">
           <p className="text-muted-foreground">
-            No courses found matching your criteria.
+            {searchQuery
+              ? "No courses found matching your search criteria."
+              : "No courses found matching your filters."}
           </p>
+          {searchQuery && (
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={() => setSearchQuery("")}
+            >
+              Clear Search
+            </Button>
+          )}
         </div>
       )}
 
@@ -215,9 +275,7 @@ const CourseCatalog = () => {
           </span>
           <Button
             variant="outline"
-            onClick={() =>
-              setCurrentPage((p) => Math.min(totalPages, p + 1))
-            }
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
           >
             Next
