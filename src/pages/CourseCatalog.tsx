@@ -17,11 +17,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import type { Course } from "@/types";
 import { getCourses, getTotalCourses } from "@/services/storage";
-import { cn } from "@/lib/utils";
 
-const PAGE_SIZE = 9;
+const PAGE_SIZE = 5;
 
 const CourseCatalog = () => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -33,6 +33,7 @@ const CourseCatalog = () => {
   const [totalCourses, setTotalCourses] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<string[]>([]);
 
   useEffect(() => {
     const loadCourses = () => {
@@ -42,6 +43,10 @@ const CourseCatalog = () => {
         const allCourses = getCourses(currentPage, PAGE_SIZE);
         setCourses(allCourses);
         setTotalCourses(getTotalCourses());
+
+        // Extract unique categories
+        const uniqueCategories = Array.from(new Set(allCourses.map(course => course.category)));
+        setCategories(uniqueCategories);
       } catch (err) {
         setError("Failed to load courses. Please try again later.");
         console.error("Error loading courses:", err);
@@ -52,12 +57,6 @@ const CourseCatalog = () => {
 
     loadCourses();
   }, [currentPage]);
-
-  // Get unique categories for filter
-  const categories = [
-    "all",
-    ...new Set(courses.map((course) => course.category)),
-  ];
 
   // Filter and sort courses
   const filteredAndSortedCourses = courses
@@ -111,7 +110,7 @@ const CourseCatalog = () => {
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <div className="space-y-4">
+        <div className="md:col-span-2">
           <Input
             type="search"
             placeholder="Search courses..."
@@ -119,131 +118,112 @@ const CourseCatalog = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             aria-label="Search courses"
           />
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="category-filter">
-              Category
-            </label>
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-            >
-              <SelectTrigger id="category-filter">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category === "all" ? "All Categories" : category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="price-filter">
-              Price
-            </label>
-            <Select value={priceFilter} onValueChange={setPriceFilter}>
-              <SelectTrigger id="price-filter">
-                <SelectValue placeholder="Select price" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Prices</SelectItem>
-                <SelectItem value="free">Free</SelectItem>
-                <SelectItem value="paid">Paid</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="sort-by">
-              Sort By
-            </label>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger id="sort-by">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="title">Title</SelectItem>
-                <SelectItem value="duration">Duration</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
-
-        <div className="md:col-span-3">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredAndSortedCourses.map((course) => (
-              <Card key={course.id} className="flex flex-col">
-                <CardHeader>
-                  <CardTitle>{course.title}</CardTitle>
-                  <CardDescription>{course.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex-grow space-y-2 flex flex-col justify-between">
-                  <div className="flex-grow">
-                    <p className="text-sm text-muted-foreground">
-                      Category: {course.category}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Duration: {course.duration} hours
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Level: {course.level}
-                    </p>
-                  </div>
-                  <p
-                    className={cn(
-                      course.isFree ? "bg-green-600" : "bg-red-600",
-                      "text-sm font-medium px-2 py-1 rounded-md w-fit text-white"
-                    )}
-                  >
-                    {course.isFree ? "Free" : "Paid"}
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button asChild className="w-full">
-                    <Link to={`/courses/${course.id}`}>View Course</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
+        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <SelectTrigger>
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {categories.map((category) => (
+              <SelectItem key={category} value={category}>
+                {category}
+              </SelectItem>
             ))}
-          </div>
-
-          {filteredAndSortedCourses.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                No courses found matching your criteria.
-              </p>
-            </div>
-          )}
-
-          {totalPages > 1 && (
-            <div className="flex justify-center gap-2 mt-6">
-              <Button
-                variant="outline"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
-              <span className="flex items-center px-4">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
-                }
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
-            </div>
-          )}
-        </div>
+          </SelectContent>
+        </Select>
+        <Select value={priceFilter} onValueChange={setPriceFilter}>
+          <SelectTrigger>
+            <SelectValue placeholder="Price" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Prices</SelectItem>
+            <SelectItem value="free">Free</SelectItem>
+            <SelectItem value="paid">Paid</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
+
+      <div className="flex justify-end">
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="title">Sort by Title</SelectItem>
+            <SelectItem value="duration">Sort by Duration</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {filteredAndSortedCourses.map((course) => (
+          <Card key={course.id} className="flex flex-col">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>{course.title}</CardTitle>
+                <Badge variant={course.isFree ? "secondary" : "default"}>
+                  {course.isFree ? "Free" : "Paid"}
+                </Badge>
+              </div>
+              <CardDescription>{course.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-grow">
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Category: {course.category}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Duration: {course.duration} hours
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Level: {course.level}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Instructor: {course.instructor}
+                </p>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button asChild className="w-full">
+                <Link to={`/courses/${course.id}`}>View Details</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+
+      {filteredAndSortedCourses.length === 0 && (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">
+            No courses found matching your criteria.
+          </p>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-2 mt-6">
+          <Button
+            variant="outline"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <span className="flex items-center px-4">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            onClick={() =>
+              setCurrentPage((p) => Math.min(totalPages, p + 1))
+            }
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
