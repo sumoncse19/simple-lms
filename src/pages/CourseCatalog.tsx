@@ -37,7 +37,7 @@ const CourseCatalog = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
-  const [isShowCourseFilter, setIsShowCourseFilter] = useState(false);
+  const [isShowCourseFilter, setIsShowCourseFilter] = useState(true);
 
   const debouncedSearch = useCallback(() => {
     const timer = setTimeout(() => {
