@@ -71,6 +71,16 @@ const CourseCatalog = () => {
     loadCourses();
   }, []);
 
+  const handleResize = () => {
+    if (window.innerWidth > 768) {
+      setIsShowCourseFilter(true);
+    } else {
+      setIsShowCourseFilter(false);
+    }
+  };
+
+  window.addEventListener("resize", handleResize);
+
   // Handle search input changes
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
