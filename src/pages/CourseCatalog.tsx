@@ -20,7 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Search } from "lucide-react";
 import type { Course } from "@/types";
-import { getCourses, getTotalCourses } from "@/services/storage";
+import { getCourses } from "@/services/storage";
 
 const PAGE_SIZE = 5;
 const SEARCH_DEBOUNCE_MS = 300;
@@ -38,15 +38,12 @@ const CourseCatalog = () => {
   const [categories, setCategories] = useState<string[]>([]);
 
   // Debounced search function
-  const debouncedSearch = useCallback(
-    (query: string) => {
-      const timer = setTimeout(() => {
-        setIsSearching(false);
-      }, SEARCH_DEBOUNCE_MS);
-      return () => clearTimeout(timer);
-    },
-    []
-  );
+  const debouncedSearch = useCallback(() => {
+    const timer = setTimeout(() => {
+      setIsSearching(false);
+    }, SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const loadCourses = () => {
@@ -79,7 +76,7 @@ const CourseCatalog = () => {
     setSearchQuery(query);
     setIsSearching(true);
     setCurrentPage(1); // Reset to first page on new search
-    debouncedSearch(query);
+    debouncedSearch();
   };
 
   // Filter and sort courses
