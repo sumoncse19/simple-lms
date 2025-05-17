@@ -1,76 +1,89 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import type { Course } from '@/types'
-import { getCourses, getTotalCourses } from '@/services/storage'
-import { cn } from '@/lib/utils'
+} from "@/components/ui/select";
+import type { Course } from "@/types";
+import { getCourses, getTotalCourses } from "@/services/storage";
+import { cn } from "@/lib/utils";
 
-const PAGE_SIZE = 9
+const PAGE_SIZE = 9;
 
 const CourseCatalog = () => {
-  const [courses, setCourses] = useState<Course[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [priceFilter, setPriceFilter] = useState<string>('all')
-  const [sortBy, setSortBy] = useState<string>('title')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalCourses, setTotalCourses] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [priceFilter, setPriceFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("title");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCourses, setTotalCourses] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadCourses = () => {
       try {
-        setIsLoading(true)
-        setError(null)
-        const allCourses = getCourses(currentPage, PAGE_SIZE)
-        setCourses(allCourses)
-        setTotalCourses(getTotalCourses())
+        setIsLoading(true);
+        setError(null);
+        const allCourses = getCourses(currentPage, PAGE_SIZE);
+        setCourses(allCourses);
+        setTotalCourses(getTotalCourses());
       } catch (err) {
-        setError('Failed to load courses. Please try again later.')
-        console.error('Error loading courses:', err)
+        setError("Failed to load courses. Please try again later.");
+        console.error("Error loading courses:", err);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    loadCourses()
-  }, [currentPage])
+    loadCourses();
+  }, [currentPage]);
 
   // Get unique categories for filter
-  const categories = ['all', ...new Set(courses.map(course => course.category))]
+  const categories = [
+    "all",
+    ...new Set(courses.map((course) => course.category)),
+  ];
 
   // Filter and sort courses
   const filteredAndSortedCourses = courses
-    .filter(course => {
-      const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        course.description.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesCategory = selectedCategory === 'all' || course.category === selectedCategory
-      const matchesPrice = priceFilter === 'all' ||
-        (priceFilter === 'free' && course.isFree) ||
-        (priceFilter === 'paid' && !course.isFree)
+    .filter((course) => {
+      const matchesSearch =
+        course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        course.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        selectedCategory === "all" || course.category === selectedCategory;
+      const matchesPrice =
+        priceFilter === "all" ||
+        (priceFilter === "free" && course.isFree) ||
+        (priceFilter === "paid" && !course.isFree);
 
-      return matchesSearch && matchesCategory && matchesPrice
+      return matchesSearch && matchesCategory && matchesPrice;
     })
     .sort((a, b) => {
-      if (sortBy === 'title') {
-        return a.title.localeCompare(b.title)
-      } else if (sortBy === 'duration') {
-        return a.duration - b.duration
+      if (sortBy === "title") {
+        return a.title.localeCompare(b.title);
+      } else if (sortBy === "duration") {
+        return a.duration - b.duration;
       }
-      return 0
-    })
+      return 0;
+    });
 
-  const totalPages = Math.ceil(totalCourses / PAGE_SIZE)
+  const totalPages = Math.ceil(totalCourses / PAGE_SIZE);
 
   if (error) {
     return (
@@ -80,7 +93,7 @@ const CourseCatalog = () => {
           <Button onClick={() => window.location.reload()}>Retry</Button>
         </div>
       </div>
-    )
+    );
   }
 
   if (isLoading) {
@@ -88,7 +101,7 @@ const CourseCatalog = () => {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -108,15 +121,20 @@ const CourseCatalog = () => {
           />
 
           <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="category-filter">Category</label>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <label className="text-sm font-medium" htmlFor="category-filter">
+              Category
+            </label>
+            <Select
+              value={selectedCategory}
+              onValueChange={setSelectedCategory}
+            >
               <SelectTrigger id="category-filter">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((category) => (
                   <SelectItem key={category} value={category}>
-                    {category === 'all' ? 'All Categories' : category}
+                    {category === "all" ? "All Categories" : category}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -124,7 +142,9 @@ const CourseCatalog = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="price-filter">Price</label>
+            <label className="text-sm font-medium" htmlFor="price-filter">
+              Price
+            </label>
             <Select value={priceFilter} onValueChange={setPriceFilter}>
               <SelectTrigger id="price-filter">
                 <SelectValue placeholder="Select price" />
@@ -138,7 +158,9 @@ const CourseCatalog = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="sort-by">Sort By</label>
+            <label className="text-sm font-medium" htmlFor="sort-by">
+              Sort By
+            </label>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger id="sort-by">
                 <SelectValue placeholder="Sort by" />
@@ -160,7 +182,7 @@ const CourseCatalog = () => {
                   <CardDescription>{course.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-grow space-y-2 flex flex-col justify-between">
-                  <div className='flex-grow'>
+                  <div className="flex-grow">
                     <p className="text-sm text-muted-foreground">
                       Category: {course.category}
                     </p>
@@ -171,11 +193,13 @@ const CourseCatalog = () => {
                       Level: {course.level}
                     </p>
                   </div>
-                  <p className={cn(
-                    course.isFree ? 'bg-green-600' : 'bg-red-600',
-                    'text-sm font-medium px-2 py-1 rounded-md w-fit text-white'
-                  )}>
-                    {course.isFree ? 'Free' : 'Paid'}
+                  <p
+                    className={cn(
+                      course.isFree ? "bg-green-600" : "bg-red-600",
+                      "text-sm font-medium px-2 py-1 rounded-md w-fit text-white"
+                    )}
+                  >
+                    {course.isFree ? "Free" : "Paid"}
                   </p>
                 </CardContent>
                 <CardFooter>
@@ -189,7 +213,9 @@ const CourseCatalog = () => {
 
           {filteredAndSortedCourses.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No courses found matching your criteria.</p>
+              <p className="text-muted-foreground">
+                No courses found matching your criteria.
+              </p>
             </div>
           )}
 
@@ -197,7 +223,7 @@ const CourseCatalog = () => {
             <div className="flex justify-center gap-2 mt-6">
               <Button
                 variant="outline"
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
               >
                 Previous
@@ -207,7 +233,9 @@ const CourseCatalog = () => {
               </span>
               <Button
                 variant="outline"
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
                 disabled={currentPage === totalPages}
               >
                 Next
@@ -217,7 +245,7 @@ const CourseCatalog = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CourseCatalog 
+export default CourseCatalog;

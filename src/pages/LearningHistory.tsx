@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -9,39 +9,50 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import type { Course, Enrollment } from '@/types'
-import { getEnrollments, getCourse } from '@/services/storage'
+} from "@/components/ui/table";
+import type { Course, Enrollment } from "@/types";
+import { getEnrollments, getCourse } from "@/services/storage";
 
 const LearningHistory = () => {
-  const [completedCourses, setCompletedCourses] = useState<Array<Enrollment & { course: Course }>>([])
-  const [summary, setSummary] = useState({ totalCourses: 0, totalHours: 0 })
+  const [completedCourses, setCompletedCourses] = useState<
+    Array<Enrollment & { course: Course }>
+  >([]);
+  const [summary, setSummary] = useState({ totalCourses: 0, totalHours: 0 });
 
   useEffect(() => {
     const loadCompletedCourses = () => {
-      const userEnrollments = getEnrollments()
+      const userEnrollments = getEnrollments();
       const completedEnrollments = userEnrollments
-        .filter(enrollment => enrollment.completedAt)
-        .map(enrollment => {
-          const course = getCourse(enrollment.courseId)
-          if (!course) return null
-          return { ...enrollment, course }
+        .filter((enrollment) => enrollment.completedAt)
+        .map((enrollment) => {
+          const course = getCourse(enrollment.courseId);
+          if (!course) return null;
+          return { ...enrollment, course };
         })
-        .filter((item): item is Enrollment & { course: Course } => item !== null)
-        .sort((a, b) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime())
+        .filter(
+          (item): item is Enrollment & { course: Course } => item !== null
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.completedAt!).getTime() -
+            new Date(a.completedAt!).getTime()
+        );
 
-      setCompletedCourses(completedEnrollments)
+      setCompletedCourses(completedEnrollments);
 
       // Calculate summary statistics
-      const totalHours = completedEnrollments.reduce((sum, enrollment) => sum + enrollment.course.duration, 0)
+      const totalHours = completedEnrollments.reduce(
+        (sum, enrollment) => sum + enrollment.course.duration,
+        0
+      );
       setSummary({
         totalCourses: completedEnrollments.length,
-        totalHours
-      })
-    }
+        totalHours,
+      });
+    };
 
-    loadCompletedCourses()
-  }, [])
+    loadCompletedCourses();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -84,10 +95,14 @@ const LearningHistory = () => {
             <TableBody>
               {completedCourses.map((enrollment) => (
                 <TableRow key={enrollment.courseId}>
-                  <TableCell className="font-medium">{enrollment.course.title}</TableCell>
+                  <TableCell className="font-medium">
+                    {enrollment.course.title}
+                  </TableCell>
                   <TableCell>{enrollment.course.category}</TableCell>
                   <TableCell>{enrollment.course.duration} hours</TableCell>
-                  <TableCell>{new Date(enrollment.completedAt!).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    {new Date(enrollment.completedAt!).toLocaleDateString()}
+                  </TableCell>
                   <TableCell className="text-right">
                     <Button asChild variant="outline" size="sm">
                       <Link to={`/courses/${enrollment.courseId}`}>Review</Link>
@@ -102,14 +117,16 @@ const LearningHistory = () => {
 
       {completedCourses.length === 0 && (
         <div className="text-center">
-          <p className="text-muted-foreground">You haven't completed any courses yet.</p>
+          <p className="text-muted-foreground">
+            You haven't completed any courses yet.
+          </p>
           <Button asChild className="mt-4">
             <Link to="/">Browse Courses</Link>
           </Button>
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default LearningHistory 
+export default LearningHistory;

@@ -1,17 +1,17 @@
-import type { ReactNode } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { cn } from '@/lib/utils'
+import type { ReactNode } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 interface LayoutProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 const Layout = ({ children }: LayoutProps) => {
-  const location = useLocation()
+  const location = useLocation();
 
   const isActive = (path: string) => {
-    return location.pathname === path
-  }
+    return location.pathname === path;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -35,7 +35,9 @@ const Layout = ({ children }: LayoutProps) => {
                 to="/my-learning"
                 className={cn(
                   "text-sm font-medium transition-colors hover:text-primary",
-                  isActive("/my-learning") ? "text-primary" : "text-muted-foreground"
+                  isActive("/my-learning")
+                    ? "text-primary"
+                    : "text-muted-foreground"
                 )}
               >
                 My Learning
@@ -44,7 +46,9 @@ const Layout = ({ children }: LayoutProps) => {
                 to="/learning-history"
                 className={cn(
                   "text-sm font-medium transition-colors hover:text-primary",
-                  isActive("/learning-history") ? "text-primary" : "text-muted-foreground"
+                  isActive("/learning-history")
+                    ? "text-primary"
+                    : "text-muted-foreground"
                 )}
               >
                 Learning History
@@ -53,7 +57,9 @@ const Layout = ({ children }: LayoutProps) => {
                 to="/profile"
                 className={cn(
                   "text-sm font-medium transition-colors hover:text-primary",
-                  isActive("/profile") ? "text-primary" : "text-muted-foreground"
+                  isActive("/profile")
+                    ? "text-primary"
+                    : "text-muted-foreground"
                 )}
               >
                 Profile
@@ -62,11 +68,9 @@ const Layout = ({ children }: LayoutProps) => {
           </nav>
         </div>
       </header>
-      <main className="container mx-auto px-4 py-8">
-        {children}
-      </main>
+      <main className="container mx-auto px-4 py-8">{children}</main>
     </div>
-  )
-}
+  );
+};
 
-export default Layout 
+export default Layout;

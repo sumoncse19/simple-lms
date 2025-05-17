@@ -1,43 +1,67 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Slider } from '@/components/ui/slider'
-import { Badge } from '@/components/ui/badge'
-import type { Course, Enrollment } from '@/types'
-import { getEnrollments, getCourse, updateEnrollmentProgress } from '@/services/storage'
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
+import type { Course, Enrollment } from "@/types";
+import {
+  getEnrollments,
+  getCourse,
+  updateEnrollmentProgress,
+} from "@/services/storage";
 
 const MyLearning = () => {
-  const [enrollments, setEnrollments] = useState<Array<Enrollment & { course: Course }>>([])
+  const [enrollments, setEnrollments] = useState<
+    Array<Enrollment & { course: Course }>
+  >([]);
 
   useEffect(() => {
     const loadEnrollments = () => {
-      const userEnrollments = getEnrollments()
-      const enrollmentsWithCourses = userEnrollments.map(enrollment => {
-        const course = getCourse(enrollment.courseId)
-        if (!course) return null
-        return { ...enrollment, course }
-      }).filter((item): item is Enrollment & { course: Course } => item !== null)
-      setEnrollments(enrollmentsWithCourses)
-    }
+      const userEnrollments = getEnrollments();
+      const enrollmentsWithCourses = userEnrollments
+        .map((enrollment) => {
+          const course = getCourse(enrollment.courseId);
+          if (!course) return null;
+          return { ...enrollment, course };
+        })
+        .filter(
+          (item): item is Enrollment & { course: Course } => item !== null
+        );
+      setEnrollments(enrollmentsWithCourses);
+    };
 
-    loadEnrollments()
-  }, [])
+    loadEnrollments();
+  }, []);
 
   const handleProgressChange = (courseId: string, progress: number) => {
-    updateEnrollmentProgress(courseId, progress)
-    const userEnrollments = getEnrollments()
-    const updatedEnrollment = userEnrollments.find(e => e.courseId === courseId)
+    updateEnrollmentProgress(courseId, progress);
+    const userEnrollments = getEnrollments();
+    const updatedEnrollment = userEnrollments.find(
+      (e) => e.courseId === courseId
+    );
     if (updatedEnrollment) {
-      setEnrollments(prev =>
-        prev.map(e =>
+      setEnrollments((prev) =>
+        prev.map((e) =>
           e.courseId === courseId
-            ? { ...e, progress: updatedEnrollment.progress, status: updatedEnrollment.status, completedAt: updatedEnrollment.completedAt }
+            ? {
+                ...e,
+                progress: updatedEnrollment.progress,
+                status: updatedEnrollment.status,
+                completedAt: updatedEnrollment.completedAt,
+              }
             : e
         )
-      )
+      );
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -49,8 +73,14 @@ const MyLearning = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>{enrollment.course.title}</CardTitle>
-                <Badge variant={enrollment.status === 'completed' ? 'default' : 'secondary'}>
-                  {enrollment.status === 'completed' ? 'Completed' : 'In Progress'}
+                <Badge
+                  variant={
+                    enrollment.status === "completed" ? "default" : "secondary"
+                  }
+                >
+                  {enrollment.status === "completed"
+                    ? "Completed"
+                    : "In Progress"}
                 </Badge>
               </div>
               <CardDescription>{enrollment.course.description}</CardDescription>
@@ -72,22 +102,35 @@ const MyLearning = () => {
                   </div>
                   <Slider
                     value={[enrollment.progress]}
-                    onValueChange={([value]) => handleProgressChange(enrollment.courseId, value)}
+                    onValueChange={([value]) =>
+                      handleProgressChange(enrollment.courseId, value)
+                    }
                     max={100}
                     step={1}
-                    disabled={enrollment.status === 'completed'}
+                    disabled={enrollment.status === "completed"}
                   />
                 </div>
                 {enrollment.completedAt && (
                   <p className="text-sm text-muted-foreground">
-                    Completed on: {new Date(enrollment.completedAt).toLocaleDateString()}
+                    Completed on:{" "}
+                    {new Date(enrollment.completedAt).toLocaleDateString()}
                   </p>
                 )}
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex gap-2">
+              {enrollment.status === "completed" && (
+                <Button className="w-full" disabled>
+                  Completed
+                </Button>
+              )}
+
               <Button asChild className="w-full">
-                <Link to={`/learning/${enrollment.courseId}`}>Continue Learning</Link>
+                <Link to={`/learning/${enrollment.courseId}`}>
+                  {enrollment.status === "completed"
+                    ? "Check Full Progress"
+                    : "Continue Learning"}
+                </Link>
               </Button>
             </CardFooter>
           </Card>
@@ -96,14 +139,16 @@ const MyLearning = () => {
 
       {enrollments.length === 0 && (
         <div className="text-center">
-          <p className="text-muted-foreground">You haven't enrolled in any courses yet.</p>
+          <p className="text-muted-foreground">
+            You haven't enrolled in any courses yet.
+          </p>
           <Button asChild className="mt-4">
             <Link to="/">Browse Courses</Link>
           </Button>
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default MyLearning 
+export default MyLearning;

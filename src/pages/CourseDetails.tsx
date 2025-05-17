@@ -1,91 +1,109 @@
-import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { getCourse, getEnrollment, enrollInCourse, getEnrollments } from '@/services/storage'
-import type { Course, Enrollment } from '@/types'
-import { cn } from '@/lib/utils'
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  getCourse,
+  getEnrollment,
+  enrollInCourse,
+  getEnrollments,
+} from "@/services/storage";
+import type { Course, Enrollment } from "@/types";
+import { cn } from "@/lib/utils";
 
 const CourseDetails = () => {
-  const { courseId } = useParams<{ courseId: string }>()
-  const navigate = useNavigate()
-  const [course, setCourse] = useState<Course | null>(null)
-  const [enrollment, setEnrollment] = useState<Enrollment | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { courseId } = useParams<{ courseId: string }>();
+  const navigate = useNavigate();
+  const [course, setCourse] = useState<Course | null>(null);
+  const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadCourseData = () => {
       try {
-        setIsLoading(true)
-        setError(null)
+        setIsLoading(true);
+        setError(null);
 
         if (!courseId) {
-          throw new Error('Course ID is required')
+          throw new Error("Course ID is required");
         }
 
-        const courseData = getCourse(courseId)
+        const courseData = getCourse(courseId);
         if (!courseData) {
-          throw new Error('Course not found')
+          throw new Error("Course not found");
         }
 
-        const enrollmentData = getEnrollment(courseId)
+        const enrollmentData = getEnrollment(courseId);
 
-        setCourse(courseData)
-        setEnrollment(enrollmentData)
+        setCourse(courseData);
+        setEnrollment(enrollmentData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load course')
-        console.error('Error loading course:', err)
+        setError(err instanceof Error ? err.message : "Failed to load course");
+        console.error("Error loading course:", err);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    loadCourseData()
-  }, [courseId])
+    loadCourseData();
+  }, [courseId]);
 
   const handleEnroll = () => {
     try {
       if (!courseId) {
-        throw new Error('Course ID is required')
+        throw new Error("Course ID is required");
       }
 
       // Check if already enrolled
       if (enrollment) {
-        throw new Error('You are already enrolled in this course')
+        throw new Error("You are already enrolled in this course");
       }
 
       // Check prerequisites
-      const allEnrollments = getEnrollments()
-      const hasPrerequisites = course?.prerequisites?.every((prereqId: string) => {
-        const prereqEnrollment = allEnrollments.find(e => e.courseId === prereqId)
-        return prereqEnrollment?.status === 'completed'
-      })
+      const allEnrollments = getEnrollments();
+      const hasPrerequisites = course?.prerequisites?.every(
+        (prereqId: string) => {
+          const prereqEnrollment = allEnrollments.find(
+            (e) => e.courseId === prereqId
+          );
+          return prereqEnrollment?.status === "completed";
+        }
+      );
 
       if (course?.prerequisites?.length && !hasPrerequisites) {
-        throw new Error('You must complete all prerequisite courses first')
+        throw new Error("You must complete all prerequisite courses first");
       }
 
       // Enroll in the course
-      enrollInCourse(courseId)
-      const newEnrollment = getEnrollment(courseId)
-      setEnrollment(newEnrollment)
+      enrollInCourse(courseId);
+      const newEnrollment = getEnrollment(courseId);
+      setEnrollment(newEnrollment);
 
       // Navigate to the course content
-      navigate(`/learning/${courseId}`)
+      navigate(`/learning/${courseId}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to enroll in course')
-      console.error('Error enrolling in course:', err)
+      setError(
+        err instanceof Error ? err.message : "Failed to enroll in course"
+      );
+      console.error("Error enrolling in course:", err);
     }
-  }
+  };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -95,7 +113,7 @@ const CourseDetails = () => {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       </div>
-    )
+    );
   }
 
   if (!course) {
@@ -105,18 +123,20 @@ const CourseDetails = () => {
           <AlertDescription>Course not found</AlertDescription>
         </Alert>
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">{course.title}</h1>
-        <p className={cn(
-          course.isFree ? 'bg-green-600' : 'bg-red-600',
-          'text-sm font-medium px-2 py-1 rounded-md text-white'
-        )}>
-          {course.isFree ? 'Free' : 'Paid'}
+        <p
+          className={cn(
+            course.isFree ? "bg-green-600" : "bg-red-600",
+            "text-sm font-medium px-2 py-1 rounded-md text-white"
+          )}
+        >
+          {course.isFree ? "Free" : "Paid"}
         </p>
       </div>
 
@@ -141,12 +161,12 @@ const CourseDetails = () => {
                 <h3 className="font-semibold mb-2">Prerequisites</h3>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   {course.prerequisites.map((prereqId: string) => {
-                    const prereqCourse = getCourse(prereqId)
+                    const prereqCourse = getCourse(prereqId);
                     return (
                       <li key={prereqId}>
-                        {prereqCourse?.title || 'Unknown Course'}
+                        {prereqCourse?.title || "Unknown Course"}
                       </li>
-                    )
+                    );
                   })}
                 </ul>
               </div>
@@ -155,24 +175,37 @@ const CourseDetails = () => {
         </CardContent>
         <CardFooter>
           {enrollment ? (
-            <Button
-              className="w-full"
-              onClick={() => navigate(`/learning/${course.id}`)}
-            >
-              Continue Learning
-            </Button>
+            <div className="flex gap-2">
+              {enrollment.status === "completed" ? (
+                <>
+                  <Button className="w-full" disabled>
+                    Completed
+                  </Button>
+                  <Button
+                    className="w-full"
+                    onClick={() => navigate(`/learning/${course.id}`)}
+                  >
+                    Check Full Progress
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  className="w-full"
+                  onClick={() => navigate(`/learning/${course.id}`)}
+                >
+                  Continue Learning
+                </Button>
+              )}
+            </div>
           ) : (
-            <Button
-              className="w-full"
-              onClick={handleEnroll}
-            >
+            <Button className="w-full" onClick={handleEnroll}>
               Enroll Now
             </Button>
           )}
         </CardFooter>
       </Card>
     </div>
-  )
-}
+  );
+};
 
-export default CourseDetails 
+export default CourseDetails;
