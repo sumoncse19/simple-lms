@@ -112,7 +112,8 @@ const CourseDetails = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to enroll in course",
+        description:
+          err instanceof Error ? err.message : "Failed to enroll in course",
       });
       console.error("Error enrolling in course:", err);
     }
@@ -170,10 +171,20 @@ const CourseDetails = () => {
             <div>
               <h3 className="font-semibold mb-2">Details</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>Category: {course.category}</li>
-                <li>Duration: {course.duration} hours</li>
-                <li>Level: {course.level}</li>
-                <li>Instructor: {course.instructor}</li>
+                <li>
+                  <span className="font-bold">Category:</span> {course.category}
+                </li>
+                <li>
+                  <span className="font-bold">Duration:</span> {course.duration}{" "}
+                  hours
+                </li>
+                <li>
+                  <span className="font-bold">Level:</span> {course.level}
+                </li>
+                <li>
+                  <span className="font-bold">Instructor:</span>{" "}
+                  {course.instructor}
+                </li>
               </ul>
             </div>
             {course.prerequisites && course.prerequisites.length > 0 && (
@@ -198,7 +209,9 @@ const CourseDetails = () => {
                             {prereqCourse.title}
                           </Link>
                         ) : (
-                          <span className="text-muted-foreground">Unknown Course</span>
+                          <span className="text-muted-foreground">
+                            Unknown Course
+                          </span>
                         )}
                       </li>
                     );

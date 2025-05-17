@@ -141,7 +141,7 @@ const CourseCatalog = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Course Catalog</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-yellow-500">
           Showing {filteredAndSortedCourses.length} courses
         </p>
       </div>
@@ -216,17 +216,29 @@ const CourseCatalog = () => {
             </CardHeader>
             <CardContent className="flex-grow">
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Category: {course.category}
+                <p className="text-sm text-yellow-500">
+                  <span className="font-bold text-muted-foreground">
+                    Category:
+                  </span>{" "}
+                  {course.category}
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  Duration: {course.duration} hours
+                <p className="text-sm text-red-500">
+                  <span className="font-bold text-muted-foreground">
+                    Duration:
+                  </span>{" "}
+                  {course.duration} hours
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  Level: {course.level}
+                <p className="text-sm text-green-500">
+                  <span className="font-bold text-muted-foreground">
+                    Level:
+                  </span>{" "}
+                  {course.level}
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  Instructor: {course.instructor}
+                <p className="text-sm text-blue-500">
+                  <span className="font-bold text-muted-foreground">
+                    Instructor:
+                  </span>{" "}
+                  {course.instructor}
                 </p>
               </div>
             </CardContent>
