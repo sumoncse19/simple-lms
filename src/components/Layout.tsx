@@ -41,6 +41,15 @@ const Layout = ({ children }: LayoutProps) => {
                 My Learning
               </Link>
               <Link
+                to="/learning-history"
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-primary",
+                  isActive("/learning-history") ? "text-primary" : "text-muted-foreground"
+                )}
+              >
+                Learning History
+              </Link>
+              <Link
                 to="/profile"
                 className={cn(
                   "text-sm font-medium transition-colors hover:text-primary",
