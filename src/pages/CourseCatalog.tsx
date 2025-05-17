@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search } from "lucide-react";
 import type { Course } from "@/types";
 import { getCourses } from "@/services/storage";
+import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 5;
 const SEARCH_DEBOUNCE_MS = 300;
@@ -36,8 +37,8 @@ const CourseCatalog = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
+  const [isShowCourseFilter, setIsShowCourseFilter] = useState(false);
 
-  // Debounced search function
   const debouncedSearch = useCallback(() => {
     const timer = setTimeout(() => {
       setIsSearching(false);
@@ -146,60 +147,105 @@ const CourseCatalog = () => {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <div className="md:col-span-2 relative">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search courses by title, description, or category..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="pl-9"
-              aria-label="Search courses"
-            />
-          </div>
-          {isSearching && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-            </div>
-          )}
+      <div className="space-y-4">
+        <div className="flex md:hidden justify-between items-center">
+          <h4 className="text-xl font-bold">Course Filter</h4>
+          <Button
+            variant="outline"
+            onClick={() => setIsShowCourseFilter((prev) => !prev)}
+            className={cn(
+              "md:hidden px-2 py-1 transition-all duration-300 ease-in-out",
+              isShowCourseFilter && "rotate-180"
+            )}
+          >
+            <svg
+              fill="#000000"
+              height="12px"
+              width="16px"
+              version="1.1"
+              id="Layer_1"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlnsXlink="http://www.w3.org/1999/xlink"
+              viewBox="0 0 330 330"
+              xmlSpace="preserve"
+            >
+              <path
+                id="XMLID_225_"
+                d="M325.607,79.393c-5.857-5.857-15.355-5.858-21.213,0.001l-139.39,139.393L25.607,79.393
+	c-5.857-5.857-15.355-5.858-21.213,0.001c-5.858,5.858-5.858,15.355,0,21.213l150.004,150c2.813,2.813,6.628,4.393,10.606,4.393
+	s7.794-1.581,10.606-4.394l149.996-150C331.465,94.749,331.465,85.251,325.607,79.393z"
+              />
+            </svg>
+          </Button>
         </div>
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger>
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {categories.map((category) => (
-              <SelectItem key={category} value={category}>
-                {category}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={priceFilter} onValueChange={setPriceFilter}>
-          <SelectTrigger>
-            <SelectValue placeholder="Price" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Prices</SelectItem>
-            <SelectItem value="free">Free</SelectItem>
-            <SelectItem value="paid">Paid</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
-      <div className="flex justify-end">
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="title">Sort by Title</SelectItem>
-            <SelectItem value="duration">Sort by Duration</SelectItem>
-          </SelectContent>
-        </Select>
+        {isShowCourseFilter && (
+          <div
+            className={cn(
+              "space-y-4 transition-all duration-300 ease-in-out bg-white",
+              isShowCourseFilter ? "h-auto" : "h-0"
+            )}
+          >
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="md:col-span-2 relative">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search courses by title, description, or category..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    className="pl-9"
+                    aria-label="Search courses"
+                  />
+                </div>
+                {isSearching && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  </div>
+                )}
+              </div>
+              <Select
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={priceFilter} onValueChange={setPriceFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Price" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Prices</SelectItem>
+                  <SelectItem value="free">Free</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end">
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="title">Sort by Title</SelectItem>
+                  <SelectItem value="duration">Sort by Duration</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
