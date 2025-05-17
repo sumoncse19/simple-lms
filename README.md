@@ -1,57 +1,169 @@
-# React + TypeScript + Vite
+# Learning Management System (LMS)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern Learning Management System built with React, TypeScript, and Vite, featuring a clean UI using Shadcn UI components.
 
-Currently, two official plugins are available:
+## Project Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```
+src/
+├── components/
+│   ├── ui/           # Shadcn UI components
+│   └── Layout.tsx    # Main layout component with navigation
+├── pages/
+│   ├── CourseCatalog.tsx    # Course listing with search and filters
+│   ├── CourseDetails.tsx    # Individual course view
+│   ├── MyLearning.tsx       # Enrolled courses and progress
+│   ├── LearningHistory.tsx  # Completed courses history
+│   └── Profile.tsx          # User profile management
+├── services/
+│   └── storage.ts    # LocalStorage management
+├── types/
+│   └── index.ts      # TypeScript type definitions
+└── lib/
+    └── utils.ts      # Utility functions
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Key Features
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 1. Course Management
+- Browse courses with search and filters
+- View detailed course information
+- Enroll in courses with prerequisite checking
+- Track course progress
+- View learning history
 
-export default tseslint.config({
-  extends: [
-    // other configs...
-    // Enable lint rules for React
-    reactX.configs['recommended-typescript'],
-    // Enable lint rules for React DOM
-    reactDom.configs.recommended,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+### 2. State Management
+- React's built-in state management using `useState` and `useEffect`
+- Local component state for UI interactions
+- Centralized data management through storage service
+
+### 3. Data Persistence
+- LocalStorage-based data management
+- Sample data initialization
+- CRUD operations for courses, enrollments, and user profiles
+
+### 4. UI Components
+- Modern UI using Shadcn UI components
+- Responsive design
+- Loading states and error handling
+- Accessible components
+
+## Component Details
+
+### CourseCatalog
+- Search functionality with debouncing
+- Category and price filters
+- Sorting options
+- Pagination
+- Responsive grid layout
+
+### CourseDetails
+- Course information display
+- Prerequisite checking
+- Enrollment management
+- Progress tracking
+
+### MyLearning
+- Enrolled courses list
+- Progress tracking with slider
+- Course status management
+- Continue learning functionality
+
+### LearningHistory
+- Completed courses table
+- Learning statistics
+- Course review access
+- Summary of total learning hours
+
+### Profile
+- User information management
+- Email validation
+- Category preferences
+- Notification settings
+
+## Data Structure
+
+### Course
+```typescript
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  duration: number;
+  isFree: boolean;
+  level: string;
+  instructor: string;
+  prerequisites?: string[];
+}
 ```
+
+### Enrollment
+```typescript
+interface Enrollment {
+  courseId: string;
+  status: 'enrolled' | 'completed';
+  progress: number;
+  enrolledAt: string;
+  completedAt?: string;
+}
+```
+
+### User
+```typescript
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  preferredCategories: string[];
+  notificationPreference: boolean;
+}
+```
+
+## LocalStorage Usage
+
+The application uses localStorage with the key `lms_data` to store:
+- Course catalog
+- User enrollments
+- User profiles
+- Course progress
+
+Data is initialized with sample courses if none exists.
+
+## Getting Started
+
+1. Install dependencies:
+```bash
+npm install
+```
+or,
+```bash
+pnpm install
+```
+
+2. Start the development server:
+```bash
+npm run dev
+```
+or,
+```bash
+pnpm dev
+```
+
+3. Build for production:
+```bash
+npm run build
+```
+or,
+```bash
+pnpm build
+```
+
+## Technologies Used
+
+- React
+- TypeScript
+- Vite
+- Shadcn UI
+- React Router
+- LocalStorage API
